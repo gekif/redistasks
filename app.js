@@ -26,9 +26,12 @@ app.get('/', function(req, res) {
     var title = 'Task List';
 
     client.lrange('tasks', 0, -1, function (err, reply) {
-        res.render('index', {
-            title: title,
-            tasks: reply
+        client.hgetall('call', function (err, call) {
+            res.render('index', {
+                title: title,
+                tasks: reply,
+                call: call
+            });
         });
     });
 });
@@ -60,6 +63,30 @@ app.post('/task/delete', function (req, res) {
                 });
             }
         }
+
+        res.redirect('/');
+    });
+});
+
+app.post('/call/add', function (req, res) {
+    var newCall = {};
+
+    newCall.name = req.body.name;
+    newCall.company = req.body.company;
+    newCall.phone = req.body.phone;
+    newCall.time = req.body.time;
+
+    client.hmset('call', [
+        'name', newCall.name,
+        'company', newCall.company,
+        'phone', newCall.phone,
+        'time', newCall.time
+    ], function (err, reply) {
+        if (err) {
+            console.log(err);
+        }
+
+        console.log(reply);
 
         res.redirect('/');
     });
